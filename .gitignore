@@ -1,0 +1,4 @@
+tickerdb.sqlite
+__pycache__/*
+telegram_bot_token
+alpha_vantage_api_keys
