@@ -51,6 +51,7 @@ class TechnicalAnalysis:
         except ZeroDivisionError:
             return [False, 'No data for a given day']
     
+    # Calling this method will use 1 API request
     def rsi_limit_crossed(self, ticker, date):
         rsidata = self.tidatas[ticker].get_rsi(symbol=ticker, interval='daily', time_period=20)
         
