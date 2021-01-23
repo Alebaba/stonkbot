@@ -1,11 +1,7 @@
 from stonkbot.stock_analysis import TechnicalAnalysis
 import matplotlib.pyplot as plt
 
-alphavantageapikeyfile = open('alpha_vantage_api_keys', 'r')
-apikeys = alphavantageapikeyfile.readline() 
-alphavantageapikeyfile.close()
-
-ta = TechnicalAnalysis(apikeys=apikeys)
+ta = TechnicalAnalysis()
 
 #%% Ticker and date
 ticker = 'AAPL'

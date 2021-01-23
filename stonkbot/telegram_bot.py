@@ -1,4 +1,5 @@
 from dbhelper import DBHelper
+from api_keys import TELEGRAM_BOT_TOKEN
 
 from telegram.ext import (
     Updater, 
@@ -11,11 +12,11 @@ from telegram.ext import (
 TICKER_ADD, TICKER_DELETE = range(2)
 
 class TelegramBot:
-    def __init__(self, token):
+    def __init__(self):
         self.db = DBHelper()
         self.db.setup()
         
-        self.token = token
+        self.token = TELEGRAM_BOT_TOKEN
         
         self.updater = Updater(token=self.token)
         self.dispatcher = self.updater.dispatcher

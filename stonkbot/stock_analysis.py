@@ -1,13 +1,13 @@
 from alpha_vantage.timeseries import TimeSeries
 from alpha_vantage.techindicators import TechIndicators
+from api_keys import ALPHA_VANTAGE_API_KEYS
 
 # Alpha vantage limitations: 5 API requests per minute and 500 requests per day
 
 class TechnicalAnalysis:
-    def __init__(self, apikeys):
-        self.apikeyamount = len(apikeys)
-        self.apikeys = apikeys
-        self.currentapikey = self.apikeys[0]
+    def __init__(self):
+        self.apikeyamount = len(ALPHA_VANTAGE_API_KEYS)
+        self.currentapikey = ALPHA_VANTAGE_API_KEYS[0]
         self.requestcounter = 0
         self.pricedatas = {}
         self.tidatas = {}
