@@ -16,31 +16,60 @@ class TechnicalAnalysis:
         self.bbdatas = {}
         self.rsidatas = {}
         self.currentdate = date.today().strftime('%Y-%m-%d')
+        
+        # When technical indicator data was updated last time
+        # Used to save API calls
+        self.bbdatasupdated = {}
+        self.rsidatasupdated = {}
     
     # Calling this method will use 1 API request
     def get_price_data(self, ticker, timeframe='daily'):
-        time = TimeSeries(key=self.currentapikey, output_format='pandas')
-        if timeframe == 'daily':
-            self.pricedatas[ticker] = time.get_daily(symbol=ticker, outputsize='compact')
-        elif timeframe == 'hourly':
-            self.pricedatas[ticker] = time.get_hourly(symbol=ticker, outputsize='compact')
+        try:
+            time = TimeSeries(key=self.currentapikey, output_format='pandas')
+            if timeframe == 'daily':
+                self.pricedatas[ticker] = time.get_daily(symbol=ticker, outputsize='compact')
+            elif timeframe == 'hourly':
+                self.pricedatas[ticker] = time.get_hourly(symbol=ticker, outputsize='compact')
+        except ValueError:
+            print('API call limit exceeded')
     
     # Calling this method will use 1 API request
     def get_technical_indicators(self, ticker):
-        self.tidatas[ticker] = TechIndicators(key=self.currentapikey, output_format='pandas')
+        try:
+            self.tidatas[ticker] = TechIndicators(key=self.currentapikey, output_format='pandas')
+        except ValueError:
+            print('API call limit exceeded')
      
     # Calling this method may use 1 API request
     def get_bollinger_band_data(self, ticker):
         self.update_date()
-        if (ticker not in self.bbdatas) or (self.currentdate not in self.bbdatas[ticker]):
+        
+        if ticker in self.bbdatasupdated:
+            if self.bbdatasupdated[ticker] == self.currentdate:
+                return self.bbdatas[ticker]
+
+        try:
             self.bbdatas[ticker], metadata = self.tidatas[ticker].get_bbands(symbol=ticker, interval='daily', time_period=20)
+            self.bbdatasupdated[ticker] = self.currentdate
+        except ValueError:
+            print('API call limit exceeded')
+                
         return self.bbdatas[ticker]
 
      # Calling this method may use 1 API request
     def get_rsi_data(self, ticker):
         self.update_date()
-        if (ticker not in self.rsidatas) or (self.currentdate not in self.rsidatas[ticker]):
+        
+        if ticker in self.rsidatasupdated:
+            if self.rsidatasupdated[ticker] == self.currentdate:
+                return self.rsidatas[ticker]
+
+        try:
             self.rsidatas[ticker], metadata = self.tidatas[ticker].get_rsi(symbol=ticker, interval='daily', time_period=20)
+            self.rsidatasupdated[ticker] = self.currentdate
+        except ValueError:
+            print('API call limit exceeded')
+            
         return self.rsidatas[ticker]
      
     # Bollinger band is considered to be crossed, if close or open is over the the upper or lower band
