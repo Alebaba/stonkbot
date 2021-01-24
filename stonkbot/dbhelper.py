@@ -21,7 +21,6 @@ class DBHelper:
         self.conn.execute(stmt, args)
         self.conn.commit()
 
-
     def delete_ticker(self, owner, ticker):
         stmt = "DELETE FROM tickers WHERE (owner, ticker) = (?, ?)"
         args = (owner, ticker)
