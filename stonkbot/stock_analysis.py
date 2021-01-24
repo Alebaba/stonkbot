@@ -38,6 +38,7 @@ class TechnicalAnalysis:
                 self.pricedatas[ticker] = time.get_daily(symbol=ticker, outputsize='compact')
             elif timeframe == 'hourly':
                 self.pricedatas[ticker] = time.get_hourly(symbol=ticker, outputsize='compact')
+            self.pricedatasupdated[ticker] = self.currentdate
         except ValueError:
             print('API call limit exceeded')
     
@@ -51,12 +52,17 @@ class TechnicalAnalysis:
         
         try:
             self.tidatas[ticker] = TechIndicators(key=self.currentapikey, output_format='pandas')
+            self.tidatasupdated[ticker] = self.currentdate
         except ValueError:
             print('API call limit exceeded')
      
-    # Calling this method may use 1 API request
+    # Calling this method may use 2 API requests
+    # TODO: check if forcerefresh is working as intended with tidata
     def get_bollinger_band_data(self, ticker, forcerefresh=False):
         self.update_date()
+        
+        if ticker not in self.tidatasupdated or forcerefresh:
+            self.get_technical_indicators(ticker=ticker, forcerefresh=True)
         
         if ticker in self.bbdatasupdated and not forcerefresh:
             if self.bbdatasupdated[ticker] == self.currentdate:
@@ -67,12 +73,19 @@ class TechnicalAnalysis:
             self.bbdatasupdated[ticker] = self.currentdate
         except ValueError:
             print('API call limit exceeded')
-                
-        return self.bbdatas[ticker]
+        
+        if ticker in self.bbdatas:
+            return self.bbdatas[ticker]
+        else:
+            return None
 
-     # Calling this method may use 1 API request
+     # Calling this method may use 2 API requests
+     # TODO: check if forcerefresh is working as intended with tidata
     def get_rsi_data(self, ticker, forcerefresh=False):
         self.update_date()
+        
+        if ticker not in self.tidatasupdated or forcerefresh:
+            self.get_technical_indicators(ticker=ticker, forcerefresh=True)
         
         if ticker in self.rsidatasupdated and not forcerefresh:
             if self.rsidatasupdated[ticker] == self.currentdate:
@@ -83,15 +96,21 @@ class TechnicalAnalysis:
             self.rsidatasupdated[ticker] = self.currentdate
         except ValueError:
             print('API call limit exceeded')
-            
-        return self.rsidatas[ticker]
+        
+        if ticker in self.rsidatas:
+            return self.rsidatas[ticker]
+        else:
+            return None
      
     # Bollinger band is considered to be crossed, if close or open is over the the upper or lower band
-    # Calling this method may use 1 API request
+    # Calling this method may use 2 API requests
     def bollinger_band_crossed(self, ticker, date, forcerefresh=False):
         self.get_bollinger_band_data(ticker=ticker, forcerefresh=forcerefresh)
         
-        if date in self.bbdatas[ticker]:
+        if ticker not in self.pricedatasupdated or forcerefresh:
+            self.get_price_data(ticker=ticker, forcerefresh=True)
+        
+        try:
             lastdaydata_bb = self.bbdatas[ticker][date]
             lastdayopen = self.pricedatas[ticker][0][date]['1. open'][0]
             lastdayclose = self.pricedatas[ticker][0][date]['4. close'][0]
@@ -105,27 +124,26 @@ class TechnicalAnalysis:
             lowerbandaverage = lowerbandaverage / len(lastdaydata_bb)
             
             if (lastdayopen > upperbandaverage or lastdayclose > upperbandaverage):
-                return [True, 'Upper band crossed']
+                return [True, 'Upper bollinger band crossed']
             elif (lastdayopen < lowerbandaverage or lastdayclose < lowerbandaverage):
-                return [True, 'Lower band crossed']
+                return [True, 'Lower bollinger band crossed']
             else:
                 return [False, 'No band crossed']
-        else:
+        except ZeroDivisionError:
+            return [False, 'No data for a given day']
+        except KeyError:
+            return [False, 'No data for a given day']
+        except IndexError:
             return [False, 'No data for a given day']
     
-    # Calling this method may use 1 API request
-    def rsi_limit_crossed(self, ticker, date, forcerefresh=False):
+    # Calling this method may use 2 API requests
+    def rsi_limit_crossed(self, ticker, date, forcerefresh=False) -> float:
         self.get_rsi_data(ticker, forcerefresh=forcerefresh)
         
-        if date in self.rsidatas[ticker]['RSI']:
-            if (self.rsidatas[ticker]['RSI'][date] > 70):
-                return [True, 'RSI is over 70']
-            elif (self.rsidatas[ticker]['RSI'][date] < 30):
-                return [True, 'RSI is under 30']
-            else:
-                return [False, 'RSI is between 30 and 70']
-        else:
-            return [False, 'No data for a given day']
+        try:
+            return self.rsidatas[ticker]['RSI'][date]
+        except KeyError:
+            return 0.0
 
     def update_date(self):
         self.currentdate = date.today().strftime('%Y-%m-%d')

@@ -9,7 +9,7 @@ class DBHelper:
         self.conn.close()
 
     def setup(self):
-        stmt = "CREATE TABLE IF NOT EXISTS tickers (owner TEXT, ticker TEXT)"
+        stmt = 'CREATE TABLE IF NOT EXISTS tickers (owner TEXT, ticker TEXT)'
         self.conn.execute(stmt)
         self.conn.commit()
 
@@ -22,12 +22,16 @@ class DBHelper:
         self.conn.commit()
 
     def delete_ticker(self, owner, ticker):
-        stmt = "DELETE FROM tickers WHERE (owner, ticker) = (?, ?)"
+        stmt = 'DELETE FROM tickers WHERE (owner, ticker) = (?, ?)'
         args = (owner, ticker)
         self.conn.execute(stmt, args)
         self.conn.commit()
 
     def get_tickers(self, owner):
-        stmt = "SELECT ticker FROM tickers WHERE owner = (?)"
+        stmt = 'SELECT ticker FROM tickers WHERE owner = (?)'
         args = (owner, )
         return [i[0] for i in self.conn.execute(stmt, args)]
+    
+    def get_owners(self):
+        stmt = 'SELECT owner FROM tickers'
+        return [i[0] for i in self.conn.execute(stmt)]

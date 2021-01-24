@@ -1,4 +1,4 @@
-from stonkbot.stock_analysis import TechnicalAnalysis
+from stock_analysis import TechnicalAnalysis
 import matplotlib.pyplot as plt
 
 ta = TechnicalAnalysis()
@@ -14,7 +14,7 @@ ta.get_technical_indicators(ticker=ticker)
 #TODO - Add candlestick to plot
 ta.get_bollinger_band_data(ticker=ticker)[1:100].plot()
 
-date = '2020-12-29'
+date = '2020-09-01'
 isbollingerbandcrossed, whatwascrossed = ta.bollinger_band_crossed(ticker=ticker, date=date)
 
 print(isbollingerbandcrossed)
@@ -26,8 +26,7 @@ print(whatwascrossed)
 ta.get_rsi_data(ticker=ticker)[5000:5317].plot()
 
 #TODO - return RSI value also
-date = '2020-09-21'
-isrsilimitcrossed, whatwascrossed = ta.rsi_limit_crossed(ticker=ticker, date=date)
+date = '2020-09-01'
+rsi = ta.rsi_limit_crossed(ticker=ticker, date=date)
 
-print(isrsilimitcrossed)
-print(whatwascrossed)
+print(rsi)
