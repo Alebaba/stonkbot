@@ -17,13 +17,21 @@ class TechnicalAnalysis:
         self.rsidatas = {}
         self.currentdate = date.today().strftime('%Y-%m-%d')
         
-        # When technical indicator data was updated last time
+        # When ticker datas were updated last time
         # Used to save API calls
+        self.pricedatasupdated = {}
+        self.tidatasupdated = {}
         self.bbdatasupdated = {}
         self.rsidatasupdated = {}
     
     # Calling this method will use 1 API request
     def get_price_data(self, ticker, timeframe='daily'):
+        self.update_date()
+        
+        if ticker in self.pricedatasupdated:
+            if self.pricedatasupdated[ticker] == self.currentdate:
+                return
+        
         try:
             time = TimeSeries(key=self.currentapikey, output_format='pandas')
             if timeframe == 'daily':
@@ -35,6 +43,12 @@ class TechnicalAnalysis:
     
     # Calling this method will use 1 API request
     def get_technical_indicators(self, ticker):
+        self.update_date()
+        
+        if ticker in self.tidatasupdated:
+            if self.tidatasupdated[ticker] == self.currentdate:
+                return
+        
         try:
             self.tidatas[ticker] = TechIndicators(key=self.currentapikey, output_format='pandas')
         except ValueError:
